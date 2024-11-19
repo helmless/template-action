@@ -20,7 +20,7 @@ jobs:
         uses: asdf-vm/actions/install@v3
 
       - name: 🧪 Run Pre-Commit
-        uses: pre-commit/action@v3
+        uses: pre-commit/action@v3.0.1
 
   template:
     name: 📜 Template Chart
