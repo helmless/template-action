@@ -1,0 +1,107 @@
+name: Helmless Template
+description: Templates a Helmless chart into a serverless manifest.
+author: 'Michael Reichenbach (Silthus)'
+branding:
+  icon: 'cloud'
+  color: 'blue'
+
+inputs:
+  chart:
+    description: 'Helm chart to use for templating. Defaults to the Google Cloud Run chart.'
+    required: false
+    default: 'oci://ghcr.io/helmless/google-cloudrun'
+  chart_version:
+    description: 'Version of the Helm chart to use.'
+    required: false
+    default: 'latest'
+  files:
+    description: 'Glob patterns of value files to include when templating the chart.'
+    required: false
+    default: 'values.yaml'
+  values:
+    description: 'Additional values to pass to the Helm chart when templating. Use one line per key-value pair.'
+    required: false
+  override_values:
+    description: 'Override values to pass to the Helm chart when templating. These values are set last and will override any other values. Use one line per key-value pair.'
+    required: false
+  print_manifest:
+    description: 'If true, print the rendered manifest to the console.'
+    required: false
+    default: 'true'
+  output_path:
+    description: 'The path to output the manifest to.'
+    required: false
+    default: 'helmless_manifest.yaml'
+outputs:
+  manifest:
+    description: 'The rendered manifest from the Helm chart as YAML.'
+    value: ${{ steps.template.outputs.manifest }}
+  manifest_path:
+    description: 'The path to the rendered manifest.'
+    value: ${{ inputs.output_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: ⚙️ Install Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: '3.14.3'
+
+    - name: 📜 Template Chart
+      id: template
+      shell: bash
+      run: |
+        VERSION_ARG=""
+        if [ "${{ inputs.chart_version }}" != "latest" ]; then
+          VERSION_ARG="--version ${{ inputs.chart_version }}"
+        fi
+
+        FILES=""
+        for pattern in ${{ inputs.files }}; do
+          if [ -f "$pattern" ]; then
+            FILES="$FILES -f $pattern"
+          fi
+        done
+
+        VALUES=""
+        if [ -n "${{ inputs.values }}" ]; then
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              VALUES="$VALUES --set $line"
+            fi
+          done <<< "${{ inputs.values }}"
+        fi
+
+        OVERRIDE_VALUES=""
+        if [ -n "${{ inputs.override_values }}" ]; then
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              OVERRIDE_VALUES="$OVERRIDE_VALUES --set $line"
+            fi
+          done <<< "${{ inputs.override_values }}"
+        fi
+
+        echo "🔍 Templating Helm chart..."
+        helm template ${{ inputs.chart }} \
+          $VERSION_ARG \
+          $FILES \
+          $VALUES \
+          $OVERRIDE_VALUES \
+          > ${{ inputs.output_path }}
+
+        if [ -f "${{ inputs.output_path }}" ]; then
+          echo "✅ Successfully generated manifest"
+        else
+          echo "❌ Failed to find manifest at expected location"
+          exit 1
+        fi
+
+        if [ "${{ inputs.print_manifest }}" = "true" ]; then
+          echo "📄 Generated manifest:"
+          cat ${{ inputs.output_path }}
+        fi
+
+        echo "manifest<<EOF" >> $GITHUB_OUTPUT
+        cat ${{ inputs.output_path }} >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
