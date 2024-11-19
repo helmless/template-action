@@ -16,8 +16,11 @@ jobs:
       - name: 🗂️ Checkout Repository
         uses: actions/checkout@v4
 
+      - name: ⚙️ ASDF Install
+        uses: asdf-vm/actions/install@v3
+
       - name: 🧪 Run Pre-Commit
-        uses: pre-commit/action@v3.0.1
+        uses: pre-commit/action@v3
 
   template:
     name: 📜 Template Chart
