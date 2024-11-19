@@ -1,0 +1,29 @@
+name: 🔍 CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: 🧹 Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🗂️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🧪 Run Pre-Commit
+        uses: pre-commit/action@v3.0.1
+
+  template:
+    name: 📜 Template Chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🗂️ Checkout Repository
+        uses: actions/checkout@v4
+      - uses: ./
+        name: 📜 Template Chart
