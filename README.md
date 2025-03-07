@@ -20,7 +20,7 @@ By default the action will use the [helmless/google-cloudrun-chart](https://gith
     # Helm chart to use for templating. Defaults to the Google Cloud Run chart.
     #
     # Required: false
-    # Default: oci://ghcr.io/helmless/google-cloudrun
+    # Default: oci://ghcr.io/helmless/google-cloudrun-service
 
     chart_version:
     # Version of the Helm chart to use.
@@ -53,10 +53,16 @@ By default the action will use the [helmless/google-cloudrun-chart](https://gith
     # Default: true
 
     output_path:
-    # The path to output the manifest to.
+    # The path to output the combined manifest to.
     #
     # Required: false
     # Default: helmless_manifest.yaml
+
+    output_dir:
+    # Directory to output individual template files to. If not specified, a temporary directory will be used.
+    #
+    # Required: false
+    # Default: ""
 ```
 <!-- action-docs-usage action="action.yaml" project="helmless/template-action" version="v0.1.0" -->
 <!-- x-release-please-end -->
@@ -66,13 +72,14 @@ By default the action will use the [helmless/google-cloudrun-chart](https://gith
 
 | name | description | required | default |
 | --- | --- | --- | --- |
-| `chart` | <p>Helm chart to use for templating. Defaults to the Google Cloud Run chart.</p> | `false` | `oci://ghcr.io/helmless/google-cloudrun` |
+| `chart` | <p>Helm chart to use for templating. Defaults to the Google Cloud Run chart.</p> | `false` | `oci://ghcr.io/helmless/google-cloudrun-service` |
 | `chart_version` | <p>Version of the Helm chart to use.</p> | `false` | `latest` |
 | `files` | <p>Glob patterns of value files to include when templating the chart.</p> | `false` | `values.yaml` |
 | `values` | <p>Additional values to pass to the Helm chart when templating. Use one line per key-value pair.</p> | `false` | `""` |
 | `override_values` | <p>Override values to pass to the Helm chart when templating. These values are set last and will override any other values. Use one line per key-value pair.</p> | `false` | `""` |
 | `print_manifest` | <p>If true, print the rendered manifest to the console.</p> | `false` | `true` |
-| `output_path` | <p>The path to output the manifest to.</p> | `false` | `helmless_manifest.yaml` |
+| `output_path` | <p>The path to output the combined manifest to.</p> | `false` | `helmless_manifest.yaml` |
+| `output_dir` | <p>Directory to output individual template files to. If not specified, a temporary directory will be used.</p> | `false` | `""` |
 <!-- action-docs-inputs source="action.yaml" -->
 
 <!-- action-docs-outputs source="action.yaml" -->
@@ -82,4 +89,6 @@ By default the action will use the [helmless/google-cloudrun-chart](https://gith
 | --- | --- |
 | `manifest` | <p>The rendered manifest from the Helm chart as YAML.</p> |
 | `manifest_path` | <p>The path to the rendered manifest.</p> |
+| `template_count` | <p>The number of templates rendered.</p> |
+| `output_dir` | <p>The directory containing the individual template files.</p> |
 <!-- action-docs-outputs source="action.yaml" -->
