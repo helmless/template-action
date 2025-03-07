@@ -22,6 +22,10 @@ jobs:
       - name: 🧪 Run Pre-Commit
         uses: pre-commit/action@v3.0.1
 
+  snapshot-test:
+    name: 📸 Snapshot Test
+    uses: ./.github/workflows/snapshot-test.yml
+
   template:
     name: 📜 Template Chart
     runs-on: ubuntu-latest
