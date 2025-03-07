@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/helmless/template-action/compare/v0.2.0...v0.2.1) (2025-03-07)
+
+
+### Bug Fixes
+
+* run dependency update before templating ([9d1655a](https://github.com/helmless/template-action/commit/9d1655a1ec390ac3e3781388295d1aca651cd08e))
+
 ## [0.2.0](https://github.com/helmless/template-action/compare/v0.1.0...v0.2.0) (2025-03-07)
 
 
