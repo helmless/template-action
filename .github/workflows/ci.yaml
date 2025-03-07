@@ -34,3 +34,5 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./
         name: 📜 Template Chart
+        with:
+          files: tests/values.yaml
