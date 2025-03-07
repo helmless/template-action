@@ -32,7 +32,7 @@ By default the action will use the [helmless/google-cloudrun-chart](https://gith
     # Glob patterns of value files to include when templating the chart.
     #
     # Required: false
-    # Default: values.yaml
+    # Default: ""
 
     values:
     # Additional values to pass to the Helm chart when templating. Use one line per key-value pair.
@@ -74,7 +74,7 @@ By default the action will use the [helmless/google-cloudrun-chart](https://gith
 | --- | --- | --- | --- |
 | `chart` | <p>Helm chart to use for templating. Defaults to the Google Cloud Run chart.</p> | `false` | `oci://ghcr.io/helmless/google-cloudrun-service` |
 | `chart_version` | <p>Version of the Helm chart to use.</p> | `false` | `latest` |
-| `files` | <p>Glob patterns of value files to include when templating the chart.</p> | `false` | `values.yaml` |
+| `files` | <p>Glob patterns of value files to include when templating the chart.</p> | `false` | `""` |
 | `values` | <p>Additional values to pass to the Helm chart when templating. Use one line per key-value pair.</p> | `false` | `""` |
 | `override_values` | <p>Override values to pass to the Helm chart when templating. These values are set last and will override any other values. Use one line per key-value pair.</p> | `false` | `""` |
 | `print_manifest` | <p>If true, print the rendered manifest to the console.</p> | `false` | `true` |
