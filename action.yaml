@@ -17,7 +17,7 @@ inputs:
   files:
     description: 'Glob patterns of value files to include when templating the chart.'
     required: false
-    default: 'values.yaml'
+    default: ''
   values:
     description: 'Additional values to pass to the Helm chart when templating. Use one line per key-value pair.'
     required: false
@@ -65,6 +65,12 @@ runs:
         VERSION_ARG=""
         if [ "${{ inputs.chart_version }}" != "latest" ]; then
           VERSION_ARG="--version ${{ inputs.chart_version }}"
+        fi
+
+        # Check if a custom chart is provided and it's not a folder
+        if [ -d "${{ inputs.chart }}" ]; then
+          echo "🔄 Running helm dependency update for custom chart..."
+          helm dependency update ${{ inputs.chart }}
         fi
 
         FILES=""
