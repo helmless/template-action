@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.0](https://github.com/helmless/template-action/compare/v0.1.0...v0.1.0) (2025-03-07)
+
+
+### Features
+
+* add and integrate snapshot testing into the ci ([#3](https://github.com/helmless/template-action/issues/3)) ([30f483e](https://github.com/helmless/template-action/commit/30f483ee86e3927e829ecdd28f9f11f73871a539))
+* enable output of multiple templates based on chart ([#5](https://github.com/helmless/template-action/issues/5)) ([ab900c5](https://github.com/helmless/template-action/commit/ab900c5d282576e9bac15221ef84daf9317ba61d))
+
+
+### Miscellaneous Chores
+
+* release 0.2.0 ([2acc2a0](https://github.com/helmless/template-action/commit/2acc2a001d30c18b65cc25ea092e6474f8a78796))
+
 ## 0.1.0 (2024-11-19)
 
 
