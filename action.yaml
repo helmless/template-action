@@ -148,7 +148,7 @@ runs:
             echo "Kind: ${KIND}, Name: ${NAME}"
             
             # Print the full template if requested
-            if [ "${{ inputs.print_manifest }}" = "verbose" ]; then
+            if [ "${{ inputs.print_manifest }}" = "true" ]; then
               cat "${template}"
             fi
             
