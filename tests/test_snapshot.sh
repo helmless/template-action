@@ -13,6 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VALUES_FILE="${SCRIPT_DIR}/values.yaml"
 SNAPSHOT_FILE="${SCRIPT_DIR}/snapshot.yaml"
 TEMP_OUTPUT="${SCRIPT_DIR}/temp_output.yaml"
+OUTPUT_DIR="${SCRIPT_DIR}/output"
 
 # Default chart from action.yaml
 DEFAULT_CHART="oci://ghcr.io/helmless/google-cloudrun-service"
@@ -21,6 +22,7 @@ DEFAULT_CHART="oci://ghcr.io/helmless/google-cloudrun-service"
 FORCE_UPDATE=false
 CI_MODE=false
 VERBOSE=false
+PRINT_TEMPLATES=true
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -38,12 +40,17 @@ while [[ $# -gt 0 ]]; do
       VERBOSE=true
       shift
       ;;
+    -n|--no-print)
+      PRINT_TEMPLATES=false
+      shift
+      ;;
     -h|--help)
       echo "Usage: $0 [options]"
       echo "Options:"
       echo "  -u, --update    Force update the snapshot"
       echo "  -c, --ci        Run in CI mode (no colors, no interactive prompts)"
       echo "  -v, --verbose   Show more detailed output"
+      echo "  -n, --no-print  Don't print rendered templates"
       echo "  -h, --help      Show this help message"
       exit 0
       ;;
@@ -64,24 +71,57 @@ if [ "$CI_MODE" = true ]; then
   NC=''
 fi
 
-# Function to generate the manifest
+# Function to generate the manifest and process templates
 generate_manifest() {
   echo -e "${YELLOW}Generating manifest from Helm chart...${NC}"
   
+  # Clean up any previous output directory
+  rm -rf "${OUTPUT_DIR}"
+  mkdir -p "${OUTPUT_DIR}"
+  
+  # Use Helm's output-dir flag to write templates to files
   helm template ${DEFAULT_CHART} \
     -f ${VALUES_FILE} \
-    > ${TEMP_OUTPUT}
-    
+    --output-dir "${OUTPUT_DIR}"
+  
   if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to generate manifest!${NC}"
     exit 1
   fi
   
-  echo -e "${GREEN}Manifest generated successfully!${NC}"
+  # Find all template files
+  TEMPLATE_FILES=$(find "${OUTPUT_DIR}" -type f -name "*.yaml" | sort)
+  TEMPLATE_COUNT=$(echo "${TEMPLATE_FILES}" | wc -l)
+  echo -e "${GREEN}Successfully generated $TEMPLATE_COUNT template(s)${NC}"
   
-  if [ "$VERBOSE" = true ]; then
-    echo -e "${BLUE}Generated manifest:${NC}"
-    cat ${TEMP_OUTPUT}
+  # Combine all templates into a single file for snapshot comparison
+  rm -f "${TEMP_OUTPUT}"
+  for template in ${TEMPLATE_FILES}; do
+    # Add separator between templates
+    if [ -s "${TEMP_OUTPUT}" ]; then
+      echo "---" >> "${TEMP_OUTPUT}"
+    fi
+    cat "${template}" >> "${TEMP_OUTPUT}"
+  done
+  
+  # Print templates if requested
+  if [ "$PRINT_TEMPLATES" = true ] || [ "$VERBOSE" = true ]; then
+    echo -e "${BLUE}Generated templates:${NC}"
+    
+    TEMPLATE_NUM=1
+    for template in ${TEMPLATE_FILES}; do
+      echo -e "${BLUE}Template $TEMPLATE_NUM: $(basename ${template})${NC}"
+      if [ "$VERBOSE" = true ]; then
+        cat "${template}"
+      else
+        # Extract kind and name for a summary
+        KIND=$(grep "kind:" "${template}" | head -1 | awk '{print $2}')
+        NAME=$(grep "name:" "${template}" | head -1 | awk '{print $2}' | tr -d '"')
+        echo "Kind: ${KIND}, Name: ${NAME}"
+      fi
+      echo ""
+      TEMPLATE_NUM=$((TEMPLATE_NUM + 1))
+    done
   fi
 }
 
@@ -136,6 +176,22 @@ compare_with_snapshot() {
     return 1
   fi
 }
+
+# Cleanup function
+cleanup() {
+  # Remove temporary output directory
+  if [ -d "${OUTPUT_DIR}" ]; then
+    rm -rf "${OUTPUT_DIR}"
+  fi
+  
+  # Remove temporary output file if it exists
+  if [ -f "${TEMP_OUTPUT}" ]; then
+    rm -f "${TEMP_OUTPUT}"
+  fi
+}
+
+# Register cleanup function to run on exit
+trap cleanup EXIT
 
 # Main execution
 echo -e "${YELLOW}Starting snapshot test...${NC}"
