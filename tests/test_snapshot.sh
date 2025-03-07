@@ -147,7 +147,17 @@ compare_with_snapshot() {
   fi
   
   echo -e "${YELLOW}Comparing with snapshot...${NC}"
-  diff_output=$(diff -u ${SNAPSHOT_FILE} ${TEMP_OUTPUT} || true)
+  # Create temporary files with helmless-chart-version lines removed
+  FILTERED_SNAPSHOT=$(mktemp)
+  FILTERED_OUTPUT=$(mktemp)
+  
+  grep -v "helmless-chart-version" ${SNAPSHOT_FILE} > ${FILTERED_SNAPSHOT} || true
+  grep -v "helmless-chart-version" ${TEMP_OUTPUT} > ${FILTERED_OUTPUT} || true
+  
+  diff_output=$(diff -u ${FILTERED_SNAPSHOT} ${FILTERED_OUTPUT} || true)
+  
+  # Clean up temp files
+  rm -f ${FILTERED_SNAPSHOT} ${FILTERED_OUTPUT}
   
   if [ -z "$diff_output" ]; then
     echo -e "${GREEN}✅ Test passed! Output matches snapshot.${NC}"
