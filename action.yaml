@@ -29,9 +29,13 @@ inputs:
     required: false
     default: 'true'
   output_path:
-    description: 'The path to output the manifest to.'
+    description: 'The path to output the combined manifest to.'
     required: false
     default: 'helmless_manifest.yaml'
+  output_dir:
+    description: 'Directory to output individual template files to. If not specified, a temporary directory will be used.'
+    required: false
+    default: ''
 outputs:
   manifest:
     description: 'The rendered manifest from the Helm chart as YAML.'
@@ -39,6 +43,12 @@ outputs:
   manifest_path:
     description: 'The path to the rendered manifest.'
     value: ${{ inputs.output_path }}
+  template_count:
+    description: 'The number of templates rendered.'
+    value: ${{ steps.template.outputs.template_count }}
+  output_dir:
+    description: 'The directory containing the individual template files.'
+    value: ${{ steps.template.outputs.output_dir }}
 
 runs:
   using: composite
@@ -82,26 +92,66 @@ runs:
           done <<< "${{ inputs.override_values }}"
         fi
 
+        # Set up output directory
+        if [ -n "${{ inputs.output_dir }}" ]; then
+          OUTPUT_DIR="${{ inputs.output_dir }}"
+        else
+          OUTPUT_DIR=$(mktemp -d)
+        fi
+        echo "output_dir=${OUTPUT_DIR}" >> $GITHUB_OUTPUT
+
         echo "🔍 Templating Helm chart..."
         helm template ${{ inputs.chart }} \
           $VERSION_ARG \
           $FILES \
           $VALUES \
           $OVERRIDE_VALUES \
-          > ${{ inputs.output_path }}
+          --output-dir "${OUTPUT_DIR}"
+
+        # Find all template files
+        TEMPLATE_FILES=$(find "${OUTPUT_DIR}" -type f -name "*.yaml" | sort)
+        TEMPLATE_COUNT=$(echo "${TEMPLATE_FILES}" | wc -l)
+        echo "template_count=${TEMPLATE_COUNT}" >> $GITHUB_OUTPUT
+        
+        # Combine all templates into a single file
+        rm -f "${{ inputs.output_path }}"
+        for template in ${TEMPLATE_FILES}; do
+          # Add separator between templates
+          if [ -s "${{ inputs.output_path }}" ]; then
+            echo "---" >> "${{ inputs.output_path }}"
+          fi
+          cat "${template}" >> "${{ inputs.output_path }}"
+        done
 
         if [ -f "${{ inputs.output_path }}" ]; then
-          echo "✅ Successfully generated manifest"
+          echo "✅ Successfully generated ${TEMPLATE_COUNT} template(s)"
         else
           echo "❌ Failed to find manifest at expected location"
           exit 1
         fi
 
         if [ "${{ inputs.print_manifest }}" = "true" ]; then
-          echo "📄 Generated manifest:"
-          cat ${{ inputs.output_path }}
+          echo "📄 Generated templates:"
+          
+          TEMPLATE_NUM=1
+          for template in ${TEMPLATE_FILES}; do
+            echo "📄 Template ${TEMPLATE_NUM}: $(basename ${template})"
+            # Extract kind and name for a summary
+            KIND=$(grep "kind:" "${template}" | head -1 | awk '{print $2}')
+            NAME=$(grep "name:" "${template}" | head -1 | awk '{print $2}' | tr -d '"')
+            echo "Kind: ${KIND}, Name: ${NAME}"
+            
+            # Print the full template if requested
+            if [ "${{ inputs.print_manifest }}" = "verbose" ]; then
+              cat "${template}"
+            fi
+            
+            echo ""
+            TEMPLATE_NUM=$((TEMPLATE_NUM + 1))
+          done
         fi
 
+        # Capture the combined manifest for the output
         echo "manifest<<EOF" >> $GITHUB_OUTPUT
-        cat ${{ inputs.output_path }} >> $GITHUB_OUTPUT
+        cat "${{ inputs.output_path }}" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
