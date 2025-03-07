@@ -1,0 +1,44 @@
+name: "test-service"
+project: "test-project"
+region: "us-central1"
+image: "gcr.io/test-project/test-image:latest"
+description: "Test service for snapshot testing"
+
+containerPort: 8080
+http2: false
+
+resources:
+  cpuThrottling: true
+  startupBoost: false
+  limits:
+    cpu: 1
+    memory: "512Mi"
+
+env:
+  MY_ENV_VAR: "test-value"
+  DEBUG: "true"
+
+autoscaling:
+  minScale: 0
+  maxScale: 10
+  maxConcurrentRequests: 80
+  timeoutSeconds: 60
+
+ingress: "all"
+
+startupProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  httpGet:
+    path: "/health"
+    port: 8080
+
+labels:
+  app: "test-service"
+  environment: "testing"
+
+serviceAccountName: "test-service@test-project.iam.gserviceaccount.com"
+
+executionEnvironment: "gen2" 

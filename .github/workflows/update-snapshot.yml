@@ -1,0 +1,43 @@
+name: 🔄 Update Snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to update snapshot on'
+        required: true
+        default: 'main'
+        type: string
+
+jobs:
+  update-snapshot:
+    name: 🔄 Update Snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🗂️ Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+      
+      - name: ⚙️ Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.14.3'
+      
+      - name: 📸 Update Snapshot
+        run: |
+          chmod +x tests/test_snapshot.sh
+          tests/test_snapshot.sh --ci --update
+      
+      - name: 📝 Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: update snapshot"
+          title: "chore: update snapshot"
+          body: |
+            This PR updates the snapshot for the Helmless template action.
+            
+            The snapshot was automatically generated from the latest chart version.
+          branch: update-snapshot
+          base: ${{ inputs.branch }}
+          delete-branch: true 

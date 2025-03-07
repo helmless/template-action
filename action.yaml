@@ -9,7 +9,7 @@ inputs:
   chart:
     description: 'Helm chart to use for templating. Defaults to the Google Cloud Run chart.'
     required: false
-    default: 'oci://ghcr.io/helmless/google-cloudrun'
+    default: 'oci://ghcr.io/helmless/google-cloudrun-service'
   chart_version:
     description: 'Version of the Helm chart to use.'
     required: false

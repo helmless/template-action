@@ -1,0 +1,42 @@
+name: 📸 Snapshot Tests
+
+on:
+  workflow_call:
+    inputs:
+      update_snapshot:
+        description: 'Whether to update the snapshot instead of testing against it'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  snapshot-test:
+    name: 📸 Run Snapshot Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🗂️ Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: ⚙️ Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.14.3'
+      
+      - name: 📸 Run Snapshot Test
+        run: |
+          chmod +x tests/test_snapshot.sh
+          if [ "${{ inputs.update_snapshot }}" == "true" ]; then
+            echo "Running snapshot test with update flag"
+            tests/test_snapshot.sh --ci --update
+          else
+            echo "Running snapshot test"
+            tests/test_snapshot.sh --ci
+          fi
+      
+      - name: 📤 Upload Snapshot Artifact
+        if: inputs.update_snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated-snapshot
+          path: tests/snapshot.yaml
+          if-no-files-found: error 
