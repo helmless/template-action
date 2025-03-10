@@ -32,7 +32,15 @@ jobs:
     steps:
       - name: 🗂️ Checkout Repository
         uses: actions/checkout@v4
+
       - uses: ./
-        name: 📜 Template Chart
+        name: 📜 Template Chart with Single Values File
         with:
           files: tests/values.yaml
+
+      - name: 📜 Template Chart with Multiple Values Files
+        uses: ./
+        with:
+          files: |
+            tests/values.yaml
+            tests/values.dev.yaml

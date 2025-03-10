@@ -74,11 +74,19 @@ runs:
         fi
 
         FILES=""
-        for pattern in ${{ inputs.files }}; do
-          if [ -f "$pattern" ]; then
-            FILES="$FILES -f $pattern"
-          fi
-        done
+        if [ -n "${{ inputs.files }}" ]; then
+          # Process multi-line input, splitting by lines
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              # Handle each line which might contain space-separated patterns
+              for pattern in $line; do
+                if [ -f "$pattern" ]; then
+                  FILES="$FILES -f $pattern"
+                fi
+              done
+            fi
+          done <<< "${{ inputs.files }}"
+        fi
 
         VALUES=""
         if [ -n "${{ inputs.values }}" ]; then
