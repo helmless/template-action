@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/helmless/template-action/compare/v0.2.1...v0.2.2) (2025-03-07)
+
+
+### Bug Fixes
+
+* print manifest if set to true ([e16dde1](https://github.com/helmless/template-action/commit/e16dde139f6b61df92f90ba9c4d978d555231caa))
+
 ## [0.2.1](https://github.com/helmless/template-action/compare/v0.2.0...v0.2.1) (2025-03-07)
 
 
