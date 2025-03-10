@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/helmless/template-action/compare/v0.2.2...v0.2.3) (2025-03-10)
+
+
+### Bug Fixes
+
+* split multiple files inputs at new line ([#9](https://github.com/helmless/template-action/issues/9)) ([c1a18c0](https://github.com/helmless/template-action/commit/c1a18c0ebb3761c45c76cd73b658d40b91235760))
+
 ## [0.2.2](https://github.com/helmless/template-action/compare/v0.2.1...v0.2.2) (2025-03-07)
 
 
