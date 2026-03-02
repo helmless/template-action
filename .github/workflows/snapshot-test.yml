@@ -35,7 +35,7 @@ jobs:
       
       - name: 📤 Upload Snapshot Artifact
         if: inputs.update_snapshot
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: updated-snapshot
           path: tests/snapshot.yaml
